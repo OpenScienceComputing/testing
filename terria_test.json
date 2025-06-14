@@ -1,13 +1,12 @@
 {
     "corsDomains": [
-        "www.sciencebase.gov",
         "raw.githubusercontent.com"
     ],
     "homeCamera": {
-    "north": 59,
-    "east": -56,
-    "south": 9,
-    "west": -136
+    "west": -76.92,
+    "east": -72.90,
+    "north": 45.30,
+    "south": 41.28
   },
   "catalog": [
     {
@@ -15,13 +14,15 @@
       "type": "group",
       "items": [
         {
-          "name": "COG S3 Test",
+          "name": "ChimneyBluffs Orthomosaic",
+          "description": "Orthomosaic of Chimney Bluffs created from drone images using a structure-from-motion approach. Data collection and processing details at https://www.sciencebase.gov/catalog/item/5b285dfee4b0592076260e4f.  This dataset uses an on-the-fly Web Map Tile Service [titiler](https://developmentseed.org/titiler/)  that reads directly from COG files on Cloud Object Storage.",
           "type": "url-template",
           "zoomOnEnable": true,
           "isEnabled": true,
           "isShown": true,
-          "rectangle": ["-122.6333437", "40.591483", "-122.5152576", "40.6623342"],
-          "url": "https://titiler.usgs.gov/cog/tiles/{z}/{x}/{y}?url=https%3A%2F%2Fprod-is-usgs-sb-prod-publish.s3.amazonaws.com%2F5e7d36c1e4b01d5092751e09%2FWhiskeytown_2019-06-03_DSM_25cm_hll.tif"        
+          "opacity": 1.0,
+          "rectangle": [   "-76.91616239831058", "43.2856062109744", "-76.9045123565574" ,"43.29195336594327"],
+          "url": "https://titiler.xyz/cog/tiles/{z}/{x}/{y}?url=https%3A%2F%2Fusgs.osn.mghpcc.org%2Fesip%2Frsignell%2Ftesting%2Fagb_1990_cog.tif"
         }
       ]
     }
