@@ -22,7 +22,7 @@
           "isShown": true,
           "opacity": 1.0,
           "rectangle": [   "-76.91616239831058", "43.2856062109744", "-76.9045123565574" ,"43.29195336594327"],
-          "url": "https://titiler.xyz/cog/tiles/{z}/{x}/{y}?url=https%3A%2F%2Fusgs.osn.mghpcc.org%2Fesip%2Frsignell%2Ftesting%2Fagb_1990_cog.tif"
+          "url": "https://titiler.usgs.gov/cog/tiles/{z}/{x}/{y}?url=https%3A%2F%2Fusgs.osn.mghpcc.org%2Fesip%2Frsignell%2Ftesting%2Fagb_1990_cog.tif"
         }
       ]
     }
