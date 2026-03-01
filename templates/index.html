@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SHYFEM - Antsiranana Bay Currents</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; left: 0; right: 0; }
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+            min-width: 220px;
+        }
+        #time-slider { width: 100%; }
+        h2 { margin: 0 0 10px 0; font-size: 16px; }
+        .info { font-size: 12px; color: #666; }
+        .btn { 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 8px 12px; 
+            margin: 5px 2px;
+            cursor: pointer; 
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .btn:hover { background: #45a049; }
+        .btn.active { background: #2196F3; }
+        #speed-legend {
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            z-index: 1000;
+        }
+        .legend-gradient {
+            width: 180px;
+            height: 15px;
+            background: linear-gradient(to right, #0000ff, #00ffff, #00ff00, #ffff00, #ff0000);
+        }
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="controls">
+        <h2>SHYFEM - Antsiranana Bay</h2>
+        <div class="info">
+            <p>Time: <span id="time-display">--</span></p>
+            <input type="range" id="time-slider" min="0" max="144" value="0">
+            <p>Frame: <span id="frame-display">0</span> / 144</p>
+            <div>
+                <button class="btn" id="play-btn">Play</button>
+                <button class="btn" id="particles-btn">Particles</button>
+            </div>
+        </div>
+    </div>
+    <div id="speed-legend">
+        <div class="legend-gradient"></div>
+        <div class="legend-labels">
+            <span>0 m/s</span>
+            <span>1.6 m/s</span>
+        </div>
+    </div>
+
+    <script>
+        var map = L.map('map').setView([-12.2, 49.3], 10);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'OSM'
+        }).addTo(map);
+
+        var currentLayer = null;
+        var particleLayer = null;
+        var playing = false;
+        var showParticles = false;
+        var currentFrame = 0;
+        var playInterval = null;
+
+        var timeSteps = [];
+        for (var i = 0; i <= 144; i++) {
+            var date = new Date(2021, 2, 31);
+            date.setHours(date.getHours() + i/2);
+            timeSteps.push(date.toISOString().slice(0, 16));
+        }
+
+        function updateFrame(frame) {
+            currentFrame = frame;
+            document.getElementById('frame-display').textContent = frame;
+            document.getElementById('time-display').textContent = timeSteps[frame];
+            document.getElementById('time-slider').value = frame;
+            
+            if (currentLayer) map.removeLayer(currentLayer);
+            
+            currentLayer = L.imageOverlay('/api/image/' + frame, 
+                [[-12.4, 49.1], [-11.9, 49.6]], 
+                {opacity: 0.7}
+            ).addTo(map);
+            
+            if (showParticles) updateParticles(frame);
+        }
+
+        function updateParticles(frame) {
+            fetch('/api/particles/' + frame)
+                .then(r => r.json())
+                .then(data => {
+                    if (particleLayer) map.removeLayer(particleLayer);
+                    
+                    particleLayer = L.layerGroup();
+                    data.particles.forEach(function(p) {
+                        L.circleMarker([p[1], p[0]], {
+                            radius: 3,
+                            fillColor: 'white',
+                            color: 'black',
+                            weight: 1,
+                            fillOpacity: 1
+                        }).addTo(particleLayer);
+                    });
+                    
+                    if (showParticles) particleLayer.addTo(map);
+                });
+        }
+
+        document.getElementById('time-slider').addEventListener('input', function(e) {
+            updateFrame(parseInt(e.target.value));
+        });
+
+        document.getElementById('play-btn').addEventListener('click', function() {
+            playing = !playing;
+            this.textContent = playing ? 'Pause' : 'Play';
+            
+            if (playing) {
+                playInterval = setInterval(function() {
+                    if (playing && currentFrame < 144) {
+                        updateFrame(currentFrame + 1);
+                    } else {
+                        playing = false;
+                        document.getElementById('play-btn').textContent = 'Play';
+                        clearInterval(playInterval);
+                    }
+                }, 200);
+            } else {
+                clearInterval(playInterval);
+            }
+        });
+
+        document.getElementById('particles-btn').addEventListener('click', function() {
+            showParticles = !showParticles;
+            this.classList.toggle('active');
+            this.textContent = showParticles ? 'Hide Parts' : 'Particles';
+            
+            if (showParticles) {
+                updateParticles(currentFrame);
+            } else if (particleLayer) {
+                map.removeLayer(particleLayer);
+            }
+        });
+
+        // Initial load
+        updateFrame(0);
+    </script>
+</body>
+</html>
